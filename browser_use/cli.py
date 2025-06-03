@@ -91,7 +91,7 @@ def get_default_config() -> dict[str, Any]:
 		'model': {
 			'name': None,
 			'temperature': 0.0,
-			'thinking_budget': None,  # For Gemini 2.5 models that support thinking
+			'thinking_budget': 0,  # For Gemini 2.5 models that support thinking (0 = disabled for max speed)
 			'api_keys': {
 				'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
 				'ANTHROPIC_API_KEY': os.getenv('ANTHROPIC_API_KEY', ''),
