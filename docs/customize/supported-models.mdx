@@ -175,13 +175,24 @@ fast_agent = Agent(
 - `gemini-2.5-flash-preview-05-20`
 - `gemini-2.5-flash` (when available)
 
+**Configuration via config.json:**
+
+To configure thinking budget, edit your config file at `~/.config/browseruse/config.json`:
+
+```json
+{
+  "model": {
+    "name": "gemini-2.5-flash-preview-04-17",
+    "thinking_budget": 1024,
+    "temperature": 0.0
+  }
+}
+```
+
 **CLI Usage:**
 ```bash
-# Enable thinking
-browseruse --model gemini-2.5-flash-preview-04-17 --thinking-budget 1024
-
-# Disable thinking for speed
-browseruse --model gemini-2.5-flash-preview-04-17 --thinking-budget 0
+# Use thinking budget configured in config.json
+browseruse --model gemini-2.5-flash-preview-04-17
 ```
 
 Required environment variables:

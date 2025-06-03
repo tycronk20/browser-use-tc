@@ -155,8 +155,6 @@ def update_config_with_click_args(config: dict[str, Any], ctx: click.Context) ->
 	# Update configuration with command-line args if provided
 	if ctx.params.get('model'):
 		config['model']['name'] = ctx.params['model']
-	if ctx.params.get('thinking_budget') is not None:
-		config['model']['thinking_budget'] = ctx.params['thinking_budget']
 	if ctx.params.get('headless') is not None:
 		config['browser']['headless'] = ctx.params['headless']
 	if ctx.params.get('window_width'):
@@ -183,7 +181,7 @@ def get_llm(config: dict[str, Any]):
 	api_keys = config.get('model', {}).get('api_keys', {})
 	model_name = config.get('model', {}).get('name')
 	temperature = config.get('model', {}).get('temperature', 0.0)
-	thinking_budget = config.get('model', {}).get('thinking_budget')
+	thinking_budget = config.get('model', {}).get('thinking_budget')  # Configured via config.json only
 
 	# Set environment variables if they're in the config but not in the environment
 	if api_keys.get('openai') and not os.getenv('OPENAI_API_KEY'):
@@ -1352,7 +1350,6 @@ async def textual_interface(config: dict[str, Any]):
 @click.command()
 @click.option('--version', is_flag=True, help='Print version and exit')
 @click.option('--model', type=str, help='Model to use (e.g., gpt-4o, claude-3-opus-20240229, gemini-pro)')
-@click.option('--thinking-budget', type=int, help='Thinking budget for supported models (0-24576 tokens, 0 disables thinking)')
 @click.option('--debug', is_flag=True, help='Enable verbose startup logging')
 @click.option('--headless', is_flag=True, help='Run browser in headless mode', default=None)
 @click.option('--window-width', type=int, help='Browser window width')

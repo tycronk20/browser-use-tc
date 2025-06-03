@@ -2,6 +2,15 @@
 Example of using Gemini 2.5 Flash models with thinking budget.
 
 This example demonstrates how to control internal reasoning tokens for Gemini 2.5 Flash models.
+
+For CLI usage, configure thinking budget in your config.json file at ~/.config/browseruse/config.json:
+{
+  "model": {
+    "name": "gemini-2.5-flash-preview-04-17",
+    "thinking_budget": 1024,
+    "temperature": 0.0
+  }
+}
 """
 
 import asyncio
