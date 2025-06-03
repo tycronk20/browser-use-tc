@@ -206,14 +206,14 @@ def get_llm(config: dict[str, Any]):
 			if not os.getenv('GOOGLE_API_KEY'):
 				print('⚠️  Google API key not found. Please update your config or set GOOGLE_API_KEY environment variable.')
 				sys.exit(1)
-			
+
 			# Prepare base arguments for Gemini model
 			gemini_kwargs = {'model': model_name, 'temperature': temperature}
-			
+
 			# Add thinking_budget parameter if specified and supported by the model
 			if thinking_budget is not None and _supports_thinking_budget(model_name):
 				gemini_kwargs['thinking_budget'] = thinking_budget
-			
+
 			return langchain_google_genai.ChatGoogleGenerativeAI(**gemini_kwargs)
 
 	# Auto-detect based on available API keys
@@ -224,11 +224,11 @@ def get_llm(config: dict[str, Any]):
 	elif os.getenv('GOOGLE_API_KEY'):
 		# Prepare base arguments for auto-detected Gemini model
 		gemini_kwargs = {'model': 'gemini-2.0-flash-lite', 'temperature': temperature}
-		
+
 		# Add thinking_budget if specified and supported by the auto-detected model
 		if thinking_budget is not None and _supports_thinking_budget('gemini-2.0-flash-lite'):
 			gemini_kwargs['thinking_budget'] = thinking_budget
-			
+
 		return langchain_google_genai.ChatGoogleGenerativeAI(**gemini_kwargs)
 	else:
 		print(
@@ -240,10 +240,10 @@ def get_llm(config: dict[str, Any]):
 def _supports_thinking_budget(model_name: str) -> bool:
 	"""
 	Check if a Gemini model supports the thinking_budget parameter.
-	
+
 	Args:
 		model_name: The name of the Gemini model to check
-		
+
 	Returns:
 		bool: True if the model supports thinking_budget, False otherwise
 	"""
@@ -254,7 +254,7 @@ def _supports_thinking_budget(model_name: str) -> bool:
 		'gemini-2.5-flash-preview-04-17',
 		'gemini-2.5-flash-preview-05-20',
 	]
-	
+
 	return any(supported_model in model_name.lower() for supported_model in supported_models)
 
 
