@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Camoufox Browser Integration for browser-use
+# This script provides a wrapper to use Camoufox browser with browser-use CLI
+# Similar to the Brave browser integration pattern
+
+# Set the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if Camoufox is available
+if ! python -c "import camoufox" 2>/dev/null; then
+    echo "❌ Error: Camoufox is not installed."
+    echo "Please install it with: pip install 'camoufox[geoip]'"
+    exit 1
+fi
+
+# Check if browser-use is available
+if ! python -c "import browser_use" 2>/dev/null; then
+    echo "❌ Error: browser-use is not installed."
+    echo "Please install it with: pip install 'browser-use[cli]'"
+    exit 1
+fi
+
+echo "🦊 Starting browser-use with Camoufox..."
+
+# Use our custom Camoufox browser session
+export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH}"
+
+# Run browser-use with our custom session
+python -c "
+import asyncio
+import sys
+from camoufox_browser_session import CamoufoxBrowserSession
+from browser_use import Agent
+from browser_use.browser.profile import BrowserProfile
+
+async def main():
+    # Create browser profile
+    profile = BrowserProfile(
+        headless=True,  # Change to False for GUI mode
+        user_data_dir=None  # Custom profiles not yet supported
+    )
+    
+    # Create Camoufox browser session
+    browser_session = CamoufoxBrowserSession(browser_profile=profile)
+    
+    try:
+        # Start the browser
+        await browser_session.start()
+        print('✅ Camoufox browser started successfully!')
+        
+        # If arguments provided, treat as a task
+        if len(sys.argv) > 1:
+            task = ' '.join(sys.argv[1:])
+            print(f'🎯 Task: {task}')
+            
+            # Note: For full agent functionality, you need to set up API keys
+            # This is just a basic browser session for now
+            page = await browser_session.get_current_page()
+            print(f'📄 Current page: {page.url}')
+        else:
+            print('🔧 Browser session ready. Add your automation code here.')
+            # Keep browser open for manual testing
+            await asyncio.sleep(10)
+            
+    finally:
+        await browser_session.close()
+        print('🔚 Browser closed.')
+
+if __name__ == '__main__':
+    asyncio.run(main())
+" "$@"
