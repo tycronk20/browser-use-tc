@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Camoufox TUI Browser Integration for browser-use
+# This script launches the browser-use TUI with Camoufox browser
+
+# Set the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Use the project's virtual environment Python
+PYTHON_CMD="$PROJECT_DIR/.venv/bin/python"
+
+# Check if the virtual environment exists
+if [ ! -f "$PYTHON_CMD" ]; then
+    echo "❌ Error: Virtual environment not found at $PROJECT_DIR/.venv"
+    echo "Please run 'uv sync' to create the virtual environment."
+    exit 1
+fi
+
+# Check if Camoufox is available
+if ! "$PYTHON_CMD" -c "import camoufox" 2>/dev/null; then
+    echo "❌ Error: Camoufox is not installed."
+    echo "Please install it with: uv add 'camoufox[geoip]'"
+    exit 1
+fi
+
+# Check if browser-use is available
+if ! "$PYTHON_CMD" -c "import browser_use" 2>/dev/null; then
+    echo "❌ Error: browser-use is not installed."
+    echo "Please install it with: uv add 'browser-use[cli]'"
+    exit 1
+fi
+
+# Check if API keys are configured
+if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$GOOGLE_API_KEY" ]; then
+    echo "⚠️  Warning: No API keys found in environment."
+    echo "   Please set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY"
+    echo "   You can add them to your .env file in the project root."
+    echo ""
+fi
+
+# Check for debug mode
+if [ "$BROWSER_USE_DEBUG" = "1" ] || [ "$DEBUG" = "1" ]; then
+    echo "🐛 Debug mode enabled"
+    export BROWSER_USE_LOGGING_LEVEL="debug"
+fi
+
+# Check which version to use
+if [ "$USE_ORIGINAL" = "1" ]; then
+    echo "🦊 Starting browser-use TUI with Camoufox (original version)..."
+    TUI_SCRIPT="camoufox_tui.py"
+else
+    echo "🦊 Starting browser-use TUI with Camoufox (fixed version)..."
+    TUI_SCRIPT="camoufox_tui_fixed.py"
+fi
+
+# Run the Camoufox TUI
+cd "$PROJECT_DIR" && "$PYTHON_CMD" "$SCRIPT_DIR/$TUI_SCRIPT" "$@" 

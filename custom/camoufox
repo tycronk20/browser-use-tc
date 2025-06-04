@@ -6,18 +6,29 @@
 
 # Set the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Use the project's virtual environment Python
+PYTHON_CMD="$PROJECT_DIR/.venv/bin/python"
+
+# Check if the virtual environment exists
+if [ ! -f "$PYTHON_CMD" ]; then
+    echo "❌ Error: Virtual environment not found at $PROJECT_DIR/.venv"
+    echo "Please run 'uv sync' to create the virtual environment."
+    exit 1
+fi
 
 # Check if Camoufox is available
-if ! python -c "import camoufox" 2>/dev/null; then
+if ! "$PYTHON_CMD" -c "import camoufox" 2>/dev/null; then
     echo "❌ Error: Camoufox is not installed."
-    echo "Please install it with: pip install 'camoufox[geoip]'"
+    echo "Please install it with: uv add 'camoufox[geoip]'"
     exit 1
 fi
 
 # Check if browser-use is available
-if ! python -c "import browser_use" 2>/dev/null; then
+if ! "$PYTHON_CMD" -c "import browser_use" 2>/dev/null; then
     echo "❌ Error: browser-use is not installed."
-    echo "Please install it with: pip install 'browser-use[cli]'"
+    echo "Please install it with: uv add 'browser-use[cli]'"
     exit 1
 fi
 
@@ -27,7 +38,7 @@ echo "🦊 Starting browser-use with Camoufox..."
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH}"
 
 # Run browser-use with our custom session
-python -c "
+"$PYTHON_CMD" -c "
 import asyncio
 import sys
 from camoufox_browser_session import CamoufoxBrowserSession
@@ -37,7 +48,7 @@ from browser_use.browser.profile import BrowserProfile
 async def main():
     # Create browser profile
     profile = BrowserProfile(
-        headless=True,  # Change to False for GUI mode
+        headless=False,  # Change to False for GUI mode
         user_data_dir=None  # Custom profiles not yet supported
     )
     
@@ -49,23 +60,41 @@ async def main():
         await browser_session.start()
         print('✅ Camoufox browser started successfully!')
         
+        # Get the current page
+        page = await browser_session.get_current_page()
+        print(f'📄 Current page: {page.url}')
+        
         # If arguments provided, treat as a task
         if len(sys.argv) > 1:
             task = ' '.join(sys.argv[1:])
             print(f'🎯 Task: {task}')
             
-            # Note: For full agent functionality, you need to set up API keys
-            # This is just a basic browser session for now
-            page = await browser_session.get_current_page()
-            print(f'📄 Current page: {page.url}')
+            # Navigate to a URL if it looks like one
+            if task.startswith('http'):
+                print(f'🌐 Navigating to: {task}')
+                await page.goto(task)
+                print('✅ Navigation complete!')
+            else:
+                # For other tasks, you'd integrate with the Agent here
+                print('ℹ️  Note: Full agent functionality requires API keys setup')
+                print('📝 To navigate, provide a URL as argument')
         else:
-            print('🔧 Browser session ready. Add your automation code here.')
-            # Keep browser open for manual testing
-            await asyncio.sleep(10)
+            print('🔧 Browser session ready for testing!')
+            print('ℹ️  Usage: ./camoufox [URL or task]')
+            print('📝 Example: ./camoufox https://example.com')
             
+        # Keep browser open until user presses Enter
+        print('\\n⏸️  Press Enter to close the browser...')
+        input()
+            
+    except Exception as e:
+        print(f'❌ Error: {e}')
+        import traceback
+        traceback.print_exc()
     finally:
+        print('🔄 Closing browser...')
         await browser_session.close()
-        print('🔚 Browser closed.')
+        print('�� Browser closed.')
 
 if __name__ == '__main__':
     asyncio.run(main())
