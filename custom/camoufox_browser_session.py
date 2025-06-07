@@ -87,11 +87,8 @@ class CamoufoxBrowserSession(BrowserSession):
         # Merge user preferences with defaults
         firefox_prefs = {**default_firefox_prefs, **self.firefox_user_prefs}
         
-        # Default launch arguments to prevent GPU crashes
-        default_launch_args = ["--disable-gpu"]
-        
-        # Combine launch args
-        launch_args = list(set(default_launch_args + self.args))
+        # Use launch arguments supplied by the caller only (no default GPU / sandbox flags)
+        launch_args = list(self.args)
         
         # Prepare Camoufox launch options
         camoufox_options = {

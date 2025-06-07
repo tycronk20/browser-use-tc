@@ -35,12 +35,28 @@ async def test_camoufox_browser_v2():
     if not has_api_key:
         print("⚠️ No API keys found. Testing browser functionality only (no LLM agent).")
     
-    # Create Camoufox browser session
+    # Create Camoufox browser session with crash prevention
     browser_session = CamoufoxBrowserSession(
         user_data_dir=str(CAMOUFOX_USER_DATA_DIR),
-        headless=True,  # Run in headless mode for Docker environment
+        headless=False,  # Run in GUI mode to prevent crashes
         # Camoufox-specific options
         geoip=True,  # Enable GeoIP for location spoofing
+        # Enhanced crash prevention measures
+        firefox_user_prefs={
+            "gfx.webrender.software": True,    # Use software rendering
+            "fission.autostart": False,         # Disable process isolation
+            "dom.ipc.processCount": 2,          # Limit content processes
+            "browser.tabs.remote.autostart": False,  # Disable tab sandboxing
+            "media.hardware-video-decoding.enabled": False,  # Disable hardware video
+            "layers.acceleration.disabled": True,  # Disable layer acceleration
+            "gfx.canvas.accelerated": False,    # Disable canvas acceleration
+        },
+        args=[
+            "--disable-gpu",           # Disable GPU acceleration
+            "--disable-webgl",         # Disable WebGL
+            "--disable-webassembly",   # Disable WebAssembly
+            "--safe-mode",             # Run in safe mode
+        ]
     )
     
     try:
